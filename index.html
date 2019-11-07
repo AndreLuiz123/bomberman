@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>bomberman</title>
+    <script src="Map.js"></script>
+    <script src="Bomberman.js"></script>
+    <script src="Bomba.js"></script>
+    
+</head>
+
+<body>
+    <canvas></canvas>
+    <script>
+
+        var canvas = document.querySelector("canvas");
+        var ctx = canvas.getContext("2d");
+        var fimDeJogo = false;
+        var mapa = new Map({COLUMNS:11, LINES:9, SIZE:64, m:
+        [
+        [1,1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,2,2,2,2,2,2,2,1],
+        [1,0,1,2,1,2,1,2,1,2,1],
+        [1,2,2,2,2,2,2,2,2,2,1],
+        [1,2,1,2,1,2,1,2,1,2,1],
+        [1,2,2,2,2,2,2,2,2,2,1],
+        [1,2,1,2,1,2,1,2,1,0,1],
+        [1,2,2,2,2,2,2,2,0,0,1],
+        [1,1,1,1,1,1,1,1,1,1,1],
+        ]
+        });
+
+        canvas.width = mapa.COLUMNS*mapa.SIZE;
+        canvas.height = mapa.LINES*mapa.SIZE;
+
+       // canvas.width = mapa.SIZE*mapa.COLUMNS;
+       // canvas.height = mapa.SIZE*mapa.LINES;
+       teclas = {
+        cima : 0,
+        baixo : 0,
+        direita : 0,
+        esquerda : 0,
+        espaco : 0
+       }
+
+       teclas2 = {
+        W : 0,
+        S : 0,
+        D : 0,
+        A : 0,
+        E : 0
+       }
+
+        var bomberman = new Bomberman({x:70, y:70},mapa);
+        var bomberman2 = new Bomberman({corBomberman:"green", x:64*9+6, y:64*7+6},mapa);
+    
+        
+        function passo(t) {
+            dt = (t - anterior) / 1000;
+
+            mapa.desenhar(ctx);
+
+            if(bomberman.perdeu || bomberman2.perdeu)
+            fimDeJogo = true;
+
+            if(fimDeJogo)
+            {
+
+                if(bomberman.perdeu && bomberman2.perdeu)
+                {
+                    ctx.fillStyle = "black";
+                    ctx.font = "50px Verdana";
+                    ctx.fillText("EMPATE", 100, 200);                
+                }else
+                {
+                    if(bomberman.perdeu)
+                    {
+                        ctx.fillStyle = "black";
+                        ctx.font = "50px Verdana";
+                        ctx.fillText("PLAYER 2 GANHOU", 100, 200);
+                    }else
+                    {
+                        ctx.fillStyle = "black";
+                        ctx.font = "50px Verdana";
+                        ctx.fillText("PLAYER 1 GANHOU", 100, 200);    
+                    }
+                }
+            }else
+            {
+
+                
+                bomberman.desenhar(ctx);
+                bomberman.mover(dt);
+                bomberman.controlePorTeclas({teclas:teclas});
+                // bomberman.aplicaRestricoes(dt);
+                // bomberman.encontraCell();
+                
+                bomberman2.desenhar(ctx);
+                bomberman2.mover(dt);
+                bomberman2.controlePorTeclas2({teclas:teclas});
+                
+                
+                
+                for(var i = 0; i<bomberman.bombas.length; i++)
+                {
+                    bomberman.bombas[i].desenhar(ctx);
+                    bomberman.bombas[i].processoExplosao(dt);
+                    bomberman.bombas[i].processoExplosao2(dt);  
+                    bomberman.bombas[i].encontraCell(); 
+                }
+                
+                for(var i = 0; i<bomberman2.bombas.length; i++)
+                {
+                    bomberman2.bombas[i].desenhar(ctx);
+                    bomberman2.bombas[i].processoExplosao(dt);  
+                    bomberman2.bombas[i].processoExplosao2(dt);  
+                    bomberman2.bombas[i].encontraCell(); 
+                }
+                
+                bomberman.verificaSePerdeu();
+                bomberman2.verificaSePerdeu();
+                
+            }
+                anterior = t;
+                ctx.fillStyle = "black";
+                //ctx.fillText(1 / dt, 10, 20);
+                requestAnimationFrame(passo);
+            }
+            
+            var dt, anterior = 0;
+            
+        addEventListener("keydown", function(e){
+            console.log(e.keyCode);
+            switch(e.keyCode)
+            {
+                
+                case 37:
+                teclas.esquerda = 1;
+                break;
+                case 38:
+                teclas.cima = 1;
+                break;
+                case 39:
+                teclas.direita = 1;
+                break;
+                case 40:
+                teclas.baixo = 1;
+                break;
+                case 32:
+                teclas.espaco = 1;
+                break;
+
+                case 65:
+                teclas.A = 1;
+                break;
+                case 87:
+                teclas.W = 1;
+                break;
+                case 68:
+                teclas.D = 1;
+                break;
+                case 83:
+                teclas.S = 1;
+                break;
+                case 69:
+                teclas.E = 1;
+                break;
+            }
+
+        })
+
+        addEventListener("keyup", function(e){
+            switch(e.keyCode)
+            {
+
+                case 37:
+                teclas.esquerda = 0;
+                break;
+                case 38:
+                teclas.cima = 0;
+                break;
+                case 39:
+                teclas.direita = 0;
+                break;
+                case 40:
+                teclas.baixo = 0;
+                break;
+                case 32:
+                teclas.espaco = 0;
+                break;
+
+                case 65:
+                teclas.A = 0;
+                break;
+                case 87:
+                teclas.W = 0;
+                break;
+                case 68:
+                teclas.D = 0;
+                break;
+                case 83:
+                teclas.S = 0;
+                break;
+                case 69:
+                teclas.E = 0;
+                break;
+            }
+
+        })
+
+        requestAnimationFrame(passo);
+
+    </script>
+</body>
+
+</html>
